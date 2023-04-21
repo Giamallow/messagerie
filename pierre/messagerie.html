@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Chat Publique</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</head>
+<body>
+	<h1>Chat Publique</h1>
+	<div id="chatbox">
+		<!-- La liste des messages sera affichée ici -->
+	</div>
+	<form>
+		<div id="username-div">
+			<input type="text" id="username" placeholder="Entrez votre nom d'utilisateur">
+		</div>
+		<input type="text" id="message" placeholder="Entrez votre message">
+		<input type="submit" value="Envoyer">
+	</form>
+
+	<script>
+		$(document).ready(function(){
+			var premierMessageEnvoye = false; // variable pour suivre si le premier message a été envoyé
+
+			// Fonction pour afficher les messages dans la liste
+			function afficherMessages() {
+				$.ajax({
+					type: "GET",
+					url: "messages.txt",
+					success: function(data){
+						$('#chatbox').html(data);
+					}
+				});
+			}
+
+			// Afficher les messages existants lors du chargement initial
+			afficherMessages();
+
+			// Fonction pour enregistrer un nouveau message dans le fichier
+			function enregistrerMessage(username, message) {
+				$.ajax({
+					type: "POST",
+					url: "enregistrer_message.php",
+					data: { username: username, message: message },
+					success: function(){
+						afficherMessages();
+						if (!premierMessageEnvoye) {
+							$('#username-div').hide(); // masquer le champ de saisie de nom d'utilisateur après le premier message
+							premierMessageEnvoye = true; // mettre à jour la variable pour suivre si le premier message a été envoyé
+						}
+					}
+				});
+			}
+
+			// Gérer la soumission du formulaire d'envoi de message
+			$('form').submit(function(e){
+				e.preventDefault(); // empêcher la soumission par défaut du formulaire
+				var username = $('#username').val(); // récupérer le nom d'utilisateur entré
+				var message = $('#message').val(); // récupérer le message entré
+				$('#message').val(''); // effacer la zone de texte
+				enregistrerMessage(username, message); // enregistrer le message dans le fichier
+			});
+		});
+	</script>
+</body>
+</html>
